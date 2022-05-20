@@ -43,12 +43,12 @@ program test_zlib
     rc = zip_deflate_mem(IN, out1, Z_DEFAULT_COMPRESSION)
     if (rc /= Z_OK) stop 'Error: zip_deflate_mem() failed'
 
-    rc = zip_inflate_mem(out1, out2, len(in) * 2)
+    rc = zip_inflate_mem(out1, out2, len(IN) * 2)
     if (rc /= Z_OK) stop 'Error: zip_inflate_mem() failed'
 
     if (IN /= out2) stop 'Error: data mismatch'
 
-    print '("source size......: ", i0)', len(in)
+    print '("source size......: ", i0)', len(IN)
     print '("deflate size.....: ", i0)', len(out1)
     print '("inflate size.....: ", i0)', len(out2)
 contains
@@ -87,7 +87,7 @@ contains
                 do i = 1, CHUNK
                     read (in_unit, iostat=err) byte
 
-                    if (is_iostat_end(stat)) then
+                    if (is_iostat_end(err)) then
                         flush = Z_FINISH
                         exit
                     end if
@@ -174,23 +174,23 @@ contains
         rc = inflate_init(strm)
         if (rc /= Z_OK) return
 
-        def_block: block
+        inf_block: block
             rc = Z_ERRNO
 
             open (access='stream', action='read', file=source, form='unformatted', &
                   iostat=err, newunit=in_unit, status='old')
-            if (err /= 0) exit def_block
+            if (err /= 0) exit inf_block
 
             open (access='stream', action='write', file=dest, form='unformatted', &
                   iostat=err, newunit=out_unit, status='replace')
-            if (err /= 0) exit def_block
+            if (err /= 0) exit inf_block
 
             do
                 n = 0
 
                 do i = 1, CHUNK
                     read (in_unit, iostat=err) byte
-                    if (is_iostat_end(stat)) exit
+                    if (is_iostat_end(err)) exit
 
                     in(i:i) = byte
                     n = n + 1
@@ -203,13 +203,13 @@ contains
                     strm%avail_out = CHUNK
                     strm%next_out = c_loc(out)
                     rc = inflate(strm, Z_NO_FLUSH)
-                    if (rc == Z_STREAM_ERROR) exit def_block
-                    if (rc == Z_NEED_DICT) exit def_block
-                    if (rc == Z_DATA_ERROR) exit def_block
-                    if (rc == Z_MEM_ERROR) exit def_block
+                    if (rc == Z_STREAM_ERROR) exit inf_block
+                    if (rc == Z_NEED_DICT) exit inf_block
+                    if (rc == Z_DATA_ERROR) exit inf_block
+                    if (rc == Z_MEM_ERROR) exit inf_block
                     have = CHUNK - strm%avail_out
                     write (out_unit, iostat=err) out(1:have)
-                    if (err /= 0) exit def_block
+                    if (err /= 0) exit inf_block
                     if (strm%avail_out /= 0) exit
                 end do
 
@@ -217,7 +217,7 @@ contains
             end do
 
             rc = Z_OK
-        end block def_block
+        end block inf_block
 
         err = inflate_end(strm)
         close (out_unit)
@@ -238,7 +238,7 @@ contains
         rc = inflate_init(strm)
         if (rc /= Z_OK) return
 
-        def_block: block
+        inf_block: block
             strm%total_in = len(source)
             strm%avail_in = len(source)
             strm%next_in = c_loc(source)
@@ -248,13 +248,13 @@ contains
             strm%next_out = c_loc(buffer)
 
             rc = inflate(strm, Z_FINISH)
-            if (rc == Z_STREAM_ERROR) exit def_block
+            if (rc == Z_STREAM_ERROR) exit inf_block
             have = len(buffer) - strm%avail_out
             dest = buffer(1:have)
 
-            if (rc /= Z_STREAM_END) exit def_block
+            if (rc /= Z_STREAM_END) exit inf_block
             rc = Z_OK
-        end block def_block
+        end block inf_block
 
         err = inflate_end(strm)
     end function zip_inflate_mem
