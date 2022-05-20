@@ -2,8 +2,9 @@
 
 FC      = gfortran
 AR      = ar
+PREFIX  = /usr
 FFLAGS  =
-LDLAGS  = -I/usr/include/ -L/usr/lib/
+LDLAGS  = -I$(PREFIX)/include/ -L$(PREFIX)/lib/
 LDLIBS  = -lz
 ARFLAGS = rcs
 TARGET  = libfortran-zlib.a
