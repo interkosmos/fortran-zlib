@@ -1,6 +1,5 @@
 program test_zlib
     use, intrinsic :: iso_c_binding, only: c_loc
-    use, intrinsic :: iso_fortran_env, only: i8 => int64
     use :: zlib
     implicit none (type, external)
 

@@ -80,7 +80,7 @@ module zlib
         function deflate(strm, flush) bind(c, name='deflate')
             import :: c_int, z_stream
             implicit none
-            type(z_stream),      intent(in)        :: strm
+            type(z_stream),      intent(inout)     :: strm
             integer(kind=c_int), intent(in), value :: flush
             integer(kind=c_int)                    :: deflate
         end function deflate
@@ -89,15 +89,15 @@ module zlib
         function deflate_end(strm) bind(c, name='deflateEnd')
             import :: c_int, z_stream
             implicit none
-            type(z_stream), intent(in) :: strm
-            integer(kind=c_int)        :: deflate_end
+            type(z_stream), intent(inout) :: strm
+            integer(kind=c_int)           :: deflate_end
         end function deflate_end
 
         ! int deflateInit_(z_streamp strm, int level, const char *version, int stream_size)
         function deflate_init_(strm, level, version, stream_size) bind(c, name='deflateInit_')
             import :: c_int, c_ptr, z_stream
             implicit none
-            type(z_stream),      intent(in)        :: strm
+            type(z_stream),      intent(inout)     :: strm
             integer(kind=c_int), intent(in), value :: level
             type(c_ptr),         intent(in), value :: version
             integer(kind=c_int), intent(in), value :: stream_size
@@ -110,22 +110,22 @@ module zlib
                 version, stream_size) bind(c, name='deflateInit2_')
             import :: c_int, c_ptr, z_stream
             implicit none
-            type(z_stream),         intent(in)        :: strm
-            integer(kind=c_int),    intent(in), value :: level
-            integer(kind=c_int),    intent(in), value :: method
-            integer(kind=c_int),    intent(in), value :: window_bits
-            integer(kind=c_int),    intent(in), value :: mem_level
-            integer(kind=c_int),    intent(in), value :: strategy
-            type(c_ptr),            intent(in), value :: version
-            integer(kind=c_int),    intent(in), value :: stream_size
-            integer(kind=c_int)                       :: deflate_init2_
+            type(z_stream),      intent(inout)     :: strm
+            integer(kind=c_int), intent(in), value :: level
+            integer(kind=c_int), intent(in), value :: method
+            integer(kind=c_int), intent(in), value :: window_bits
+            integer(kind=c_int), intent(in), value :: mem_level
+            integer(kind=c_int), intent(in), value :: strategy
+            type(c_ptr),         intent(in), value :: version
+            integer(kind=c_int), intent(in), value :: stream_size
+            integer(kind=c_int)                    :: deflate_init2_
         end function deflate_init2_
 
         ! int inflate(z_streamp strm, int flush)
         function inflate(strm, flush) bind(c, name='inflate')
             import :: c_int, z_stream
             implicit none
-            type(z_stream),      intent(in)        :: strm
+            type(z_stream),      intent(inout)     :: strm
             integer(kind=c_int), intent(in), value :: flush
             integer(kind=c_int)                    :: inflate
         end function inflate
@@ -134,15 +134,15 @@ module zlib
         function inflate_end(strm) bind(c, name='inflateEnd')
             import :: c_int, z_stream
             implicit none
-            type(z_stream), intent(in) :: strm
-            integer(kind=c_int)        :: inflate_end
+            type(z_stream), intent(inout) :: strm
+            integer(kind=c_int)           :: inflate_end
         end function inflate_end
 
         ! int inflateInit_(z_streamp strm, const char *version, int stream_size)
         function inflate_init_(strm, version, stream_size) bind(c, name='inflateInit_')
             import :: c_int, c_ptr, z_stream
             implicit none
-            type(z_stream),      intent(in)        :: strm
+            type(z_stream),      intent(inout)     :: strm
             type(c_ptr),         intent(in), value :: version
             integer(kind=c_int), intent(in), value :: stream_size
             integer(kind=c_int)                    :: inflate_init_
@@ -152,7 +152,7 @@ module zlib
         function inflate_init2_(strm, window_bits, version, stream_size) bind(c, name='inflateInit2_')
             import :: c_int, c_ptr, z_stream
             implicit none
-            type(z_stream),      intent(in)        :: strm
+            type(z_stream),      intent(inout)     :: strm
             integer(kind=c_int), intent(in), value :: window_bits
             type(c_ptr),         intent(in), value :: version
             integer(kind=c_int), intent(in), value :: stream_size
