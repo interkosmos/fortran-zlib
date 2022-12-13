@@ -89,6 +89,7 @@ module zlib
         ! uLong adler32(uLong adler, const Bytef *buf, uInt len)
         function adler32(adler, buf, len) bind(c, name='adler32')
             import :: z_byte, z_uint, z_ulong
+            implicit none
             integer(kind=z_ulong),  intent(in), value :: adler
             character(kind=z_byte), intent(in)        :: buf
             integer(kind=z_uint),   intent(in), value :: len
@@ -98,6 +99,7 @@ module zlib
         ! uLong adler32_z(uLong adler, const Bytef *buf, z_size_t len)
         function adler32_z(adler, buf, len) bind(c, name='adler32_z')
             import :: z_byte, z_size_t, z_ulong
+            implicit none
             integer(kind=z_ulong),  intent(in), value :: adler
             character(kind=z_byte), intent(in)        :: buf
             integer(kind=z_size_t), intent(in), value :: len
@@ -138,6 +140,7 @@ module zlib
         ! uLong crc32(uLong adler, const Bytef *buf, uInt len)
         function crc32(adler, buf, len) bind(c, name='crc32')
             import :: z_byte, z_uint, z_ulong
+            implicit none
             integer(kind=z_ulong),  intent(in), value :: adler
             character(kind=z_byte), intent(in)        :: buf
             integer(kind=z_uint),   intent(in), value :: len
@@ -147,6 +150,7 @@ module zlib
         ! uLong crc32_z(uLong adler, const Bytef *buf, z_size_t len)
         function crc32_z(adler, buf, len) bind(c, name='crc32_z')
             import :: z_byte, z_size_t, z_ulong
+            implicit none
             integer(kind=z_ulong),  intent(in), value :: adler
             character(kind=z_byte), intent(in)        :: buf
             integer(kind=z_size_t), intent(in), value :: len
