@@ -9,9 +9,10 @@ module zlib
     implicit none (type, external)
     private
 
-    integer, parameter, public :: z_uint  = c_int
-    integer, parameter, public :: z_ulong = c_long
-    integer, parameter, public :: z_byte  = c_char
+    integer, parameter, public :: z_byte   = c_char
+    integer, parameter, public :: z_size_t = c_size_t
+    integer, parameter, public :: z_uint   = c_int
+    integer, parameter, public :: z_ulong  = c_long
 
     integer(kind=c_int), parameter, public :: Z_NO_FLUSH      = 0
     integer(kind=c_int), parameter, public :: Z_PARTIAL_FLUSH = 1
@@ -66,6 +67,13 @@ module zlib
         integer(kind=z_ulong) :: reserved  = 0
     end type z_stream
 
+    public :: adler32
+    public :: adler32_z
+    public :: compress
+    public :: compress2
+    public :: compress_bound
+    public :: crc32
+    public :: crc32_z
     public :: deflate
     public :: deflate_end
     public :: deflate_init
@@ -74,8 +82,77 @@ module zlib
     public :: inflate_end
     public :: inflate_init
     public :: inflate_init2
+    public :: uncompress
+    public :: uncompress2
 
     interface
+        ! uLong adler32(uLong adler, const Bytef *buf, uInt len)
+        function adler32(adler, buf, len) bind(c, name='adler32')
+            import :: z_byte, z_uint, z_ulong
+            integer(kind=z_ulong),  intent(in), value :: adler
+            character(kind=z_byte), intent(in)        :: buf
+            integer(kind=z_uint),   intent(in), value :: len
+            integer(kind=z_ulong)                     :: adler32
+        end function adler32
+
+        ! uLong adler32_z(uLong adler, const Bytef *buf, z_size_t len)
+        function adler32_z(adler, buf, len) bind(c, name='adler32_z')
+            import :: z_byte, z_size_t, z_ulong
+            integer(kind=z_ulong),  intent(in), value :: adler
+            character(kind=z_byte), intent(in)        :: buf
+            integer(kind=z_size_t), intent(in), value :: len
+            integer(kind=z_ulong)                     :: adler32_z
+        end function adler32_z
+
+        ! int compress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen)
+        function compress(dest, dest_len, source, source_len) bind(c, name='compress')
+            import :: c_int, z_byte, z_ulong
+            implicit none
+            character(kind=z_byte), intent(inout)     :: dest
+            integer(kind=z_ulong),  intent(inout)     :: dest_len
+            character(kind=z_byte), intent(in)        :: source
+            integer(kind=z_ulong),  intent(in), value :: source_len
+            integer(kind=c_int)                       :: compress
+        end function compress
+
+        ! int compress2(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen, int level)
+        function compress2(dest, dest_len, source, source_len, level) bind(c, name='compress2')
+            import :: c_int, z_byte, z_ulong
+            implicit none
+            character(kind=z_byte), intent(inout)     :: dest
+            integer(kind=z_ulong),  intent(inout)     :: dest_len
+            character(kind=z_byte), intent(in)        :: source
+            integer(kind=z_ulong),  intent(in), value :: source_len
+            integer(kind=c_int),    intent(in), value :: level
+            integer(kind=c_int)                       :: compress2
+        end function compress2
+
+        ! uLong compressBound(uLong sourceLen)
+        function compress_bound(source_len) bind(c, name='compressBound')
+            import :: z_ulong
+            implicit none
+            integer(kind=z_ulong), intent(in), value :: source_len
+            integer(kind=z_ulong)                    :: compress_bound
+        end function compress_bound
+
+        ! uLong crc32(uLong adler, const Bytef *buf, uInt len)
+        function crc32(adler, buf, len) bind(c, name='crc32')
+            import :: z_byte, z_uint, z_ulong
+            integer(kind=z_ulong),  intent(in), value :: adler
+            character(kind=z_byte), intent(in)        :: buf
+            integer(kind=z_uint),   intent(in), value :: len
+            integer(kind=z_ulong)                     :: crc32
+        end function crc32
+
+        ! uLong crc32_z(uLong adler, const Bytef *buf, z_size_t len)
+        function crc32_z(adler, buf, len) bind(c, name='crc32_z')
+            import :: z_byte, z_size_t, z_ulong
+            integer(kind=z_ulong),  intent(in), value :: adler
+            character(kind=z_byte), intent(in)        :: buf
+            integer(kind=z_size_t), intent(in), value :: len
+            integer(kind=z_ulong)                     :: crc32_z
+        end function crc32_z
+
         ! int deflate(z_streamp strm, int flush)
         function deflate(strm, flush) bind(c, name='deflate')
             import :: c_int, z_stream
@@ -158,6 +235,28 @@ module zlib
             integer(kind=c_int), intent(in), value :: stream_size
             integer(kind=c_int)                    :: inflate_init2_
         end function inflate_init2_
+
+        ! int uncompress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen)
+        function uncompress(dest, dest_len, source, source_len) bind(c, name='uncompress')
+            import :: c_int, z_byte, z_ulong
+            implicit none
+            character(kind=z_byte), intent(inout)     :: dest
+            integer(kind=z_ulong),  intent(inout)     :: dest_len
+            character(kind=z_byte), intent(in)        :: source
+            integer(kind=z_ulong),  intent(in), value :: source_len
+            integer(kind=c_int)                       :: uncompress
+        end function uncompress
+
+        ! int uncompress2(Bytef *dest, uLongf *destLen, const Bytef *source, uLong *sourceLen)
+        function uncompress2(dest, dest_len, source, source_len) bind(c, name='uncompress2')
+            import :: c_int, z_byte, z_ulong
+            implicit none
+            character(kind=z_byte), intent(inout) :: dest
+            integer(kind=z_ulong),  intent(inout) :: dest_len
+            character(kind=z_byte), intent(in)    :: source
+            integer(kind=z_ulong),  intent(inout) :: source_len
+            integer(kind=c_int)                   :: uncompress2
+        end function uncompress2
 
         function zlib_version_() bind(c, name='zlibVersion')
             import :: c_ptr

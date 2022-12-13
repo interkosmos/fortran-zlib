@@ -1,5 +1,6 @@
 program test_zlib
     use, intrinsic :: iso_c_binding, only: c_loc
+    use, intrinsic :: iso_fortran_env, only: i8 => int64
     use :: zlib
     implicit none (type, external)
 
@@ -9,49 +10,89 @@ program test_zlib
     character(len=*), parameter :: DST_FILE  = 'test.txt.z'
     character(len=*), parameter :: DST_FILE2 = 'test2.txt'
 
-    character(len=*), parameter :: IN = &
-        repeat('Now is the time for all good men to come to the aid of the party. ', 10)
+    character(len=*), parameter :: SRC_IN1 = &
+        'Now is the time for all good men to come to the aid of the party.'
+    character(len=*), parameter :: SRC_IN2 = repeat(SRC_IN1 // ' ', 10)
 
-    character(len=:), allocatable :: out1, out2
-    integer                       :: rc, sz1, sz2, sz3
+    integer(kind=i8), parameter :: SRC_A32 = int(z'E9DD1697', kind=i8)
+    integer(kind=i8), parameter :: SRC_CRC = int(z'93D6A5C9', kind=i8)
+
+    character(len=:), allocatable :: in1, out1, out2, out3, out4
+    integer                       :: rc, sz, sz1, sz2
+    integer(kind=i8)              :: a32, c32, sz3, sz4
     logical                       :: exists
 
+    ! Adler32 checksum (must be initialised to 1).
+    a32 = adler32(1_i8, SRC_IN1, len(SRC_IN1))
+    if (a32 /= SRC_A32) stop 'Error: adler32() failed'
+
+    a32 = adler32_z(1_i8, SRC_IN1, len(SRC_IN1, kind=i8))
+    if (a32 /= SRC_A32) stop 'Error: adler32_z() failed'
+
+    ! CRC32 checksum (must be initialised to 0).
+    c32 = crc32(0_i8, SRC_IN1, len(SRC_IN1))
+    if (c32 /= SRC_CRC) stop 'Error: crc32() failed'
+
+    c32 = crc32_z(0_i8, SRC_IN1, len(SRC_IN1, kind=i8))
+    if (c32 /= SRC_CRC) stop 'Error: crc32_z() failed'
+
+    print '("Adler32..........: 0x", z0)', a32
+    print '("CRC32............: 0x", z0)', c32
+
     ! Deflate/inflate file.
-    inquire (exist=exists, file=SRC_FILE, size=sz1)
-    if (.not. exists) stop 'Error: source file not found'
+    inquire (exist=exists, file=SRC_FILE, size=sz)
+    if (.not. exists) stop 'Error: input file not found'
 
-    rc = zip_deflate_file(SRC_FILE, DST_FILE, Z_DEFAULT_COMPRESSION)
-    if (rc /= Z_OK) stop 'Error: zip_deflate_file() failed'
+    rc = z_deflate_file(SRC_FILE, DST_FILE, Z_DEFAULT_COMPRESSION)
+    if (rc /= Z_OK) stop 'Error: z_deflate_file() failed'
 
-    inquire (exist=exists, file=DST_FILE, size=sz2)
+    inquire (exist=exists, file=DST_FILE, size=sz1)
     if (.not. exists) stop 'Error: deflated file not found'
 
-    rc = zip_inflate_file(DST_FILE, DST_FILE2)
-    if (rc /= Z_OK) stop 'Error: zip_inflate_file() failed'
+    rc = z_inflate_file(DST_FILE, DST_FILE2)
+    if (rc /= Z_OK) stop 'Error: z_inflate_file() failed'
 
-    inquire (exist=exists, file=DST_FILE2, size=sz3)
+    inquire (exist=exists, file=DST_FILE2, size=sz2)
     if (.not. exists) stop 'Error: inflated file not found'
 
-    if (sz1 /= sz3) stop 'Error: file sizes do not match'
+    if (sz /= sz2) stop 'Error: file sizes do not match'
 
-    print '("input file size..: ", i0)', sz1
-    print '("deflate file size: ", i0)', sz2
-    print '("inflate file size: ", i0)', sz3
+    print '("input file size..: ", i0)', sz
+    print '("deflate file size: ", i0)', sz1
+    print '("inflate file size: ", i0)', sz2
 
     ! Deflate/inflate memory.
-    rc = zip_deflate_mem(IN, out1, Z_DEFAULT_COMPRESSION)
-    if (rc /= Z_OK) stop 'Error: zip_deflate_mem() failed'
+    rc = z_deflate_mem(SRC_IN2, out1, Z_DEFAULT_COMPRESSION)
+    if (rc /= Z_OK) stop 'Error: z_deflate_mem() failed'
 
-    rc = zip_inflate_mem(out1, out2, len(IN) * 2)
-    if (rc /= Z_OK) stop 'Error: zip_inflate_mem() failed'
+    rc = z_inflate_mem(out1, out2, len(SRC_IN2) * 2)
+    if (rc /= Z_OK) stop 'Error: z_inflate_mem() failed'
 
-    if (IN /= out2) stop 'Error: data mismatch'
+    if (out2 /= SRC_IN2) stop 'Error: data mismatch'
 
-    print '("source size......: ", i0)', len(IN)
+    print '("input size.......: ", i0)', len(SRC_IN2)
     print '("deflate size.....: ", i0)', len(out1)
     print '("inflate size.....: ", i0)', len(out2)
+
+    ! Compress.
+    sz3 = compress_bound(len(SRC_IN2, kind=i8))
+    allocate (character(len=sz3) :: out3)
+    rc = compress(out3, sz3, SRC_IN2, len(SRC_IN2, kind=i8))
+    if (rc /= Z_OK) stop 'Error: compress() failed'
+
+    ! Uncompress.
+    sz4 = len(SRC_IN2)
+    allocate (character(len=sz4) :: out4)
+    rc = uncompress(out4, sz4, out3, sz3)
+    if (rc /= Z_OK) stop 'Error: uncompress() failed'
+
+    print '("input size.......: ", i0)', len(SRC_IN2)
+    print '("compress size....: ", i0)', sz3
+    print '("uncompress size..: ", i0)', sz4
+
+    if (sz4 /= len(SRC_IN2)) stop 'Error: data mismatch'
 contains
-    integer function zip_deflate_file(source, dest, level) result(rc)
+    integer function z_deflate_file(source, dest, level) result(rc)
         character(len=*), intent(in) :: source
         character(len=*), intent(in) :: dest
         integer,          intent(in) :: level
@@ -120,9 +161,9 @@ contains
         err = deflate_end(strm)
         close (out_unit)
         close (in_unit)
-    end function zip_deflate_file
+    end function z_deflate_file
 
-    integer function zip_deflate_mem(source, dest, level) result(rc)
+    integer function z_deflate_mem(source, dest, level) result(rc)
         character(len=*), target,      intent(in)  :: source
         character(len=:), allocatable, intent(out) :: dest
         integer,                       intent(in)  :: level
@@ -155,9 +196,9 @@ contains
         end block def_block
 
         err = deflate_end(strm)
-    end function zip_deflate_mem
+    end function z_deflate_mem
 
-    integer function zip_inflate_file(source, dest) result(rc)
+    integer function z_inflate_file(source, dest) result(rc)
         character(len=*), intent(in) :: source
         character(len=*), intent(in) :: dest
 
@@ -221,9 +262,9 @@ contains
         err = inflate_end(strm)
         close (out_unit)
         close (in_unit)
-    end function zip_inflate_file
+    end function z_inflate_file
 
-    integer function zip_inflate_mem(source, dest, buffer_size) result(rc)
+    integer function z_inflate_mem(source, dest, buffer_size) result(rc)
         character(len=*), target,      intent(in)  :: source
         character(len=:), allocatable, intent(out) :: dest
         integer,                       intent(in)  :: buffer_size
@@ -256,5 +297,5 @@ contains
         end block inf_block
 
         err = inflate_end(strm)
-    end function zip_inflate_mem
+    end function z_inflate_mem
 end program test_zlib
