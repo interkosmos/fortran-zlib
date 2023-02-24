@@ -39,17 +39,16 @@ The following basic example compresses and uncompresses an input string.
 ```fortran
 ! example.f90
 program main
-    use, intrinsic :: iso_fortran_env, only: i8 => int64
     use :: zlib
     implicit none (type, external)
 
     character(len=:), allocatable :: str_in, str_out, str_x
-    integer(kind=i8)              :: sz_in, sz_out, sz_x
+    integer(kind=z_ulong)         :: sz_in, sz_out, sz_x
     integer                       :: rc
 
     ! Input.
     str_in = repeat('Fortran ', 10)
-    sz_in  = len(str_in, kind=i8)
+    sz_in  = len(str_in, kind=z_ulong)
 
     ! Compress.
     sz_x = compress_bound(sz_in)
