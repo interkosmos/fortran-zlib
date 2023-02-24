@@ -1,6 +1,5 @@
 program test_zlib
     use, intrinsic :: iso_c_binding, only: c_loc
-    use, intrinsic :: iso_fortran_env, only: i8 => int64
     use :: zlib
     implicit none (type, external)
 
@@ -14,26 +13,26 @@ program test_zlib
         'Now is the time for all good men to come to the aid of the party.'
     character(len=*), parameter :: SRC_IN2 = repeat(SRC_IN1 // ' ', 10)
 
-    integer(kind=i8), parameter :: SRC_A32 = int(z'E9DD1697', kind=i8)
-    integer(kind=i8), parameter :: SRC_CRC = int(z'93D6A5C9', kind=i8)
+    integer(kind=z_ulong), parameter :: SRC_A32 = int(z'E9DD1697', kind=z_ulong)
+    integer(kind=z_ulong), parameter :: SRC_CRC = int(z'93D6A5C9', kind=z_ulong)
 
     character(len=:), allocatable :: in1, out1, out2, out3, out4
     integer                       :: rc, sz, sz1, sz2
-    integer(kind=i8)              :: a32, c32, sz3, sz4
+    integer(kind=z_ulong)         :: a32, c32, sz3, sz4
     logical                       :: exists
 
     ! Adler32 checksum (must be initialised to 1).
-    a32 = adler32(1_i8, SRC_IN1, len(SRC_IN1))
+    a32 = adler32(1_z_ulong, SRC_IN1, len(SRC_IN1))
     if (a32 /= SRC_A32) stop 'Error: adler32() failed'
 
-    a32 = adler32_z(1_i8, SRC_IN1, len(SRC_IN1, kind=i8))
+    a32 = adler32_z(1_z_ulong, SRC_IN1, len(SRC_IN1, kind=z_ulong))
     if (a32 /= SRC_A32) stop 'Error: adler32_z() failed'
 
     ! CRC32 checksum (must be initialised to 0).
-    c32 = crc32(0_i8, SRC_IN1, len(SRC_IN1))
+    c32 = crc32(0_z_ulong, SRC_IN1, len(SRC_IN1))
     if (c32 /= SRC_CRC) stop 'Error: crc32() failed'
 
-    c32 = crc32_z(0_i8, SRC_IN1, len(SRC_IN1, kind=i8))
+    c32 = crc32_z(0_z_ulong, SRC_IN1, len(SRC_IN1, kind=z_ulong))
     if (c32 /= SRC_CRC) stop 'Error: crc32_z() failed'
 
     print '("Adler32..........: 0x", z0)', a32
@@ -75,9 +74,9 @@ program test_zlib
     print '("inflate size.....: ", i0)', len(out2)
 
     ! Compress.
-    sz3 = compress_bound(len(SRC_IN2, kind=i8))
+    sz3 = compress_bound(len(SRC_IN2, kind=z_ulong))
     allocate (character(len=sz3) :: out3)
-    rc = compress(out3, sz3, SRC_IN2, len(SRC_IN2, kind=i8))
+    rc = compress(out3, sz3, SRC_IN2, len(SRC_IN2, kind=z_ulong))
     if (rc /= Z_OK) stop 'Error: compress() failed'
 
     ! Uncompress.
