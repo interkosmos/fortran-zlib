@@ -1,7 +1,8 @@
 # fortran-zlib
 
 A collection of Fortran 2018 ISO_C_BINDING interfaces to selected zlib
-functions.
+functions. The library is also available on
+[MacPorts](https://ports.macports.org/port/fortran-zlib/).
 
 ## Build Instructions
 
