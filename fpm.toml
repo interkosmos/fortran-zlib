@@ -13,6 +13,9 @@ link = "z"
 [library]
 source-dir = "src"
 
+[install]
+library = true
+
 [[test]]
 name = "test_zlib"
 source-dir = "test"
