@@ -3,7 +3,8 @@
 FC      = gfortran
 AR      = ar
 PREFIX  = /usr
-FFLAGS  =
+DEBUG   = #-Wall -g -O0 -fmax-errors=1
+FFLAGS  = $(DEBUG)
 LDLAGS  = -I$(PREFIX)/include/ -L$(PREFIX)/lib/
 LDLIBS  = -lz
 ARFLAGS = rcs
