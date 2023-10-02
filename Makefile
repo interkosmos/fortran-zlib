@@ -1,11 +1,15 @@
 .POSIX:
+.SUFFIXES:
 
 FC      = gfortran
 AR      = ar
 PREFIX  = /usr
-DEBUG   = #-Wall -g -O0 -fmax-errors=1
-FFLAGS  = $(DEBUG)
-LDLAGS  = -I$(PREFIX)/include/ -L$(PREFIX)/lib/
+
+DEBUG   = -g -O0 -Wall -fmax-errors=1
+RELEASE = -O2 -march=native
+
+FFLAGS  = $(RELEASE)
+LDLAGS  = -I$(PREFIX)/include -L$(PREFIX)/lib
 LDLIBS  = -lz
 ARFLAGS = rcs
 TARGET  = libfortran-zlib.a
