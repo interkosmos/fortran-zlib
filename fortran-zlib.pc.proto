@@ -1,0 +1,13 @@
+name=fortran-zlib
+prefix=PREFIX
+gnuver=GNU-VER
+includedir=${prefix}/include/
+moduledir=${prefix}/include/${name}/GNU-${gnuver}/
+libdir=${prefix}/lib/
+
+Name: ${name}
+Description: zlib bindings for fortran
+Version: ${version}
+Requires: zlib
+Cflags: -I${includedir} -I${moduledir}
+Libs: -L${libdir} -lfortran-zlib
