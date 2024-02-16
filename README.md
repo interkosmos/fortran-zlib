@@ -44,23 +44,23 @@ program main
     implicit none (type, external)
 
     character(len=:), allocatable :: str_in, str_out, str_x
-    integer(kind=z_ulong)         :: sz_in, sz_out, sz_x
+    integer(kind=z_ulong)         :: len_in, len_out, len_x
     integer                       :: rc
 
     ! Input.
     str_in = repeat('Fortran ', 10)
-    sz_in  = len(str_in, kind=z_ulong)
+    len_in = len(str_in, kind=z_ulong)
 
     ! Compress.
-    sz_x = compress_bound(sz_in)
-    allocate (character(len=sz_x) :: str_x)
-    rc = compress(str_x, sz_x, str_in, sz_in)
+    len_x = compress_bound(len_in)
+    allocate (character(len=len_x) :: str_x)
+    rc = compress(str_x, len_x, str_in, len_in)
     if (rc /= Z_OK) stop 'Error: compress() failed'
 
     ! Uncompress.
-    sz_out = sz_in
-    allocate (character(len=sz_out) :: str_out)
-    rc = uncompress(str_out, sz_out, str_x, sz_x)
+    len_out = len_in
+    allocate (character(len=len_out) :: str_out)
+    rc = uncompress(str_out, len_out, str_x, len_x)
     if (rc /= Z_OK) stop 'Error: uncompress() failed'
 end program main
 ```
