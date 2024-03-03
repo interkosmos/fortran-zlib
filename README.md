@@ -1,29 +1,28 @@
 # fortran-zlib
 
-A collection of Fortran 2018 ISO_C_BINDING interfaces to selected zlib
-functions. The library is also available on
-[MacPorts](https://ports.macports.org/port/fortran-zlib/).
+A collection of Fortran 2018 interface bindings to selected zlib functions. The
+library is also available on [MacPorts](https://ports.macports.org/port/fortran-zlib/).
 
 ## Build Instructions
 
-Simply run the provided Makefile:
+Build and install the library with the provided Makefile:
 
 ```
 $ make
+$ make install PREFIX=/opt
 ```
 
-This outputs the static library `libfortran-zlib.a`. Link your program against
-`libfortran-zlib.a -lz`. Optionally, overwrite the default compiler:
+Link your program against `/opt/lib/libfortran-zlib.a -lz`. Optionally,
+overwrite the default compiler:
 
 ```
-$ make FC=ifort
+$ make FC=ifx
 ```
 
-Alternatively, you can compile the library with
-[fpm](https://github.com/fortran-lang/fpm):
+Or, use the [Fortran Package Manager](https://github.com/fortran-lang/fpm):
 
 ```
-$ fpm build --profile=release
+$ fpm build --profile release
 ```
 
 Build and run the test program:
@@ -65,10 +64,11 @@ program main
 end program main
 ```
 
-Compile, link, and run the example program with:
+If the library is installed to `/opt`, then compile, link, and run the example
+program with:
 
 ```
-$ gfortran -o example example.f90 libfortran-zlib.a -lz
+$ gfortran -I/opt/include/libfortran-zlib -o example example.f90 /opt/lib/libfortran-zlib.a -lz
 $ ./example
 ```
 

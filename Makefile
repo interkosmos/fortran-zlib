@@ -12,12 +12,16 @@ FFLAGS  = $(RELEASE)
 LDLAGS  = -I$(PREFIX)/include -L$(PREFIX)/lib
 LDLIBS  = -lz
 ARFLAGS = rcs
+INCDIR  = $(PREFIX)/include/libfortran-zlib
+LIBDIR  = $(PREFIX)/lib
+MODULE  = zlib.mod
 TARGET  = ./libfortran-zlib.a
 SHARED  = ./libfortran-zlib.so
 
-.PHONY: all clean shared test test_shared
+.PHONY: all clean install shared test test_shared
 
 all: $(TARGET)
+
 shared: $(SHARED)
 
 $(TARGET): src/zlib.f90
@@ -32,6 +36,15 @@ test: $(TARGET) test/test_zlib.f90
 
 test_shared: $(SHARED) test/test_zlib.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o test_zlib_shared test/test_zlib.f90 $(SHARED) $(LDLIBS)
+
+install: $(TARGET)
+	@echo "--- Installing libraries to $(LIBDIR)/ ..."
+	install -d $(LIBDIR)
+	install -m 644 $(TARGET) $(LIBDIR)/
+	if [ -e $(SHARED) ]; then install -m 644 $(SHARED) $(LIBDIR)/; fi
+	@echo "--- Installing module files to $(INCDIR)/ ..."
+	install -d $(INCDIR)
+	install -m 644 $(MODULE) $(INCDIR)/
 
 clean:
 	if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then rm *.mod; fi
