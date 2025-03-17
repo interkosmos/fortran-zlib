@@ -6,7 +6,7 @@ AR      = ar
 PREFIX  = /usr
 
 DEBUG   = -g -O0 -Wall -fmax-errors=1
-RELEASE = -O2 -march=native
+RELEASE = -O2
 
 FFLAGS  = $(RELEASE)
 LDLAGS  = -I$(PREFIX)/include -L$(PREFIX)/lib
@@ -53,3 +53,5 @@ clean:
 	if [ -e $(SHARED) ]; then rm $(SHARED); fi
 	if [ -e test_zlib ]; then rm test_zlib; fi
 	if [ -e test_zlib_shared ]; then rm test_zlib_shared; fi
+	if [ -e test2.txt ]; then rm test2.txt; fi
+	if [ -e test.txt.z ]; then rm test.txt.z; fi

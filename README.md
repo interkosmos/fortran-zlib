@@ -64,8 +64,8 @@ program main
 end program main
 ```
 
-If the library is installed to `/opt`, then compile, link, and run the example
-program with:
+If the library has been installed to `/opt`, then compile, link, and run the
+example program with:
 
 ```
 $ gfortran -I/opt/include/libfortran-zlib -o example example.f90 /opt/lib/libfortran-zlib.a -lz

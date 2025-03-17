@@ -3,7 +3,7 @@ program test_zlib
     use :: zlib
     implicit none (type, external)
 
-    integer, parameter :: CHUNK = 16384
+    integer, parameter :: CHUNK_LEN = 16384
 
     character(len=*), parameter :: SRC_FILE  = 'test/test.txt'
     character(len=*), parameter :: DST_FILE  = 'test.txt.z'
@@ -96,14 +96,12 @@ contains
         character(len=*), intent(in) :: dest
         integer,          intent(in) :: level
 
-        character(len=CHUNK), target :: in
-        character(len=CHUNK), target :: out
-
-        character      :: byte
-        integer        :: err, flush, have
-        integer        :: i, n
-        integer        :: in_unit, out_unit
-        type(z_stream) :: strm
+        character(len=CHUNK_LEN), target :: in, out
+        character                        :: byte
+        integer                          :: err, flush, have
+        integer                          :: i, n
+        integer                          :: in_unit, out_unit
+        type(z_stream_type)              :: strm
 
         rc = deflate_init(strm, level)
         if (rc /= Z_OK) return
@@ -123,7 +121,7 @@ contains
                 n = 0
                 flush = Z_NO_FLUSH
 
-                do i = 1, CHUNK
+                do i = 1, CHUNK_LEN
                     read (in_unit, iostat=err) byte
 
                     if (is_iostat_end(err)) then
@@ -136,15 +134,18 @@ contains
                 end do
 
                 strm%avail_in = n
-                strm%next_in = c_loc(in)
+                strm%next_in  = c_loc(in)
 
                 do
-                    strm%avail_out = CHUNK
-                    strm%next_out = c_loc(out)
+                    strm%avail_out = CHUNK_LEN
+                    strm%next_out  = c_loc(out)
+
                     rc = deflate(strm, flush)
                     if (rc == Z_STREAM_ERROR) exit def_block
-                    have = CHUNK - strm%avail_out
+
+                    have = CHUNK_LEN - strm%avail_out
                     write (out_unit, iostat=err) out(1:have)
+
                     if (err /= 0) exit def_block
                     if (strm%avail_out /= 0) exit
                 end do
@@ -169,7 +170,7 @@ contains
 
         character(len=len(source)), target :: buffer
         integer                            :: err, have
-        type(z_stream)                     :: strm
+        type(z_stream_type)                :: strm
 
         dest = ''
 
@@ -179,14 +180,15 @@ contains
         def_block: block
             strm%total_in = len(source)
             strm%avail_in = len(source)
-            strm%next_in = c_loc(source)
+            strm%next_in  = c_loc(source)
 
             strm%total_out = len(buffer)
             strm%avail_out = len(buffer)
-            strm%next_out = c_loc(buffer)
+            strm%next_out  = c_loc(buffer)
 
             rc = deflate(strm, Z_FINISH)
             if (rc == Z_STREAM_ERROR) exit def_block
+
             have = len(buffer) - strm%avail_out
             dest = buffer(1:have)
 
@@ -201,14 +203,12 @@ contains
         character(len=*), intent(in) :: source
         character(len=*), intent(in) :: dest
 
-        character(len=CHUNK), target :: in
-        character(len=CHUNK), target :: out
-
-        character      :: byte
-        integer        :: err, have
-        integer        :: i, n
-        integer        :: in_unit, out_unit
-        type(z_stream) :: strm
+        character(len=CHUNK_LEN), target :: in, out
+        character                        :: byte
+        integer                          :: err, have
+        integer                          :: i, n
+        integer                          :: in_unit, out_unit
+        type(z_stream_type)              :: strm
 
         rc = inflate_init(strm)
         if (rc /= Z_OK) return
@@ -227,7 +227,7 @@ contains
             do
                 n = 0
 
-                do i = 1, CHUNK
+                do i = 1, CHUNK_LEN
                     read (in_unit, iostat=err) byte
                     if (is_iostat_end(err)) exit
 
@@ -236,18 +236,22 @@ contains
                 end do
 
                 strm%avail_in = n
-                strm%next_in = c_loc(in)
+                strm%next_in  = c_loc(in)
 
                 do
-                    strm%avail_out = CHUNK
-                    strm%next_out = c_loc(out)
+                    strm%avail_out = CHUNK_LEN
+                    strm%next_out  = c_loc(out)
+
                     rc = inflate(strm, Z_NO_FLUSH)
+
                     if (rc == Z_STREAM_ERROR) exit inf_block
-                    if (rc == Z_NEED_DICT) exit inf_block
-                    if (rc == Z_DATA_ERROR) exit inf_block
-                    if (rc == Z_MEM_ERROR) exit inf_block
-                    have = CHUNK - strm%avail_out
+                    if (rc == Z_NEED_DICT)    exit inf_block
+                    if (rc == Z_DATA_ERROR)   exit inf_block
+                    if (rc == Z_MEM_ERROR)    exit inf_block
+
+                    have = CHUNK_LEN - strm%avail_out
                     write (out_unit, iostat=err) out(1:have)
+
                     if (err /= 0) exit inf_block
                     if (strm%avail_out /= 0) exit
                 end do
@@ -270,7 +274,7 @@ contains
 
         character(len=buffer_size), target :: buffer
         integer                            :: err, have
-        type(z_stream)                     :: strm
+        type(z_stream_type)                :: strm
 
         dest = ''
 
@@ -280,14 +284,15 @@ contains
         inf_block: block
             strm%total_in = len(source)
             strm%avail_in = len(source)
-            strm%next_in = c_loc(source)
+            strm%next_in  = c_loc(source)
 
             strm%total_out = len(buffer)
             strm%avail_out = len(buffer)
-            strm%next_out = c_loc(buffer)
+            strm%next_out  = c_loc(buffer)
 
             rc = inflate(strm, Z_FINISH)
             if (rc == Z_STREAM_ERROR) exit inf_block
+
             have = len(buffer) - strm%avail_out
             dest = buffer(1:have)
 
