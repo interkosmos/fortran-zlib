@@ -3,13 +3,13 @@
 
 FC      = gfortran
 AR      = ar
-PREFIX  = /usr
+PREFIX  = /usr/local
 
 DEBUG   = -g -O0 -Wall -fmax-errors=1
 RELEASE = -O2
 
 FFLAGS  = $(RELEASE)
-LDLAGS  = -I$(PREFIX)/include -L$(PREFIX)/lib
+LDFLAGS = -I$(PREFIX)/include -L$(PREFIX)/lib
 LDLIBS  = -lz
 ARFLAGS = rcs
 INCDIR  = $(PREFIX)/include/libfortran-zlib
