@@ -3,6 +3,7 @@
 
 FC      = gfortran
 AR      = ar
+RM      = /bin/rm
 PREFIX  = /usr/local
 
 DEBUG   = -g -O0 -Wall -fmax-errors=1
@@ -47,11 +48,11 @@ install: $(TARGET)
 	install -m 644 $(MODULE) $(INCDIR)/
 
 clean:
-	if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then rm *.mod; fi
-	if [ `ls -1 *.o 2>/dev/null | wc -l` -gt 0 ]; then rm *.o; fi
-	if [ -e $(TARGET) ]; then rm $(TARGET); fi
-	if [ -e $(SHARED) ]; then rm $(SHARED); fi
-	if [ -e test_zlib ]; then rm test_zlib; fi
-	if [ -e test_zlib_shared ]; then rm test_zlib_shared; fi
-	if [ -e test2.txt ]; then rm test2.txt; fi
-	if [ -e test.txt.z ]; then rm test.txt.z; fi
+	$(RM) -rf *.mod
+	$(RM) -rf *.o
+	$(RM) -rf $(TARGET)
+	$(RM) -rf $(SHARED)
+	$(RM) -rf test_zlib
+	$(RM) -rf test_zlib_shared
+	$(RM) -rf test2.txt
+	$(RM) -rf test.txt.z
